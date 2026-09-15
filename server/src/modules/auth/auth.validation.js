@@ -23,11 +23,11 @@ const validateRegisterInput = (data) => {
 
   if (!role || typeof role !== 'string') {
     errors.push('Role is required');
-  } else if (!['DONOR', 'VOLUNTEER'].includes(role.toUpperCase())) {
+  } else if (!['DONOR', 'VOLUNTEER', 'CUSTOMER'].includes(role.toUpperCase())) {
     if (role.toUpperCase() === 'ADMIN') {
       errors.push('Public registration for ADMIN role is not allowed');
     } else {
-      errors.push('Role must be either DONOR or VOLUNTEER');
+      errors.push('Role must be DONOR, VOLUNTEER, or CUSTOMER');
     }
   }
 

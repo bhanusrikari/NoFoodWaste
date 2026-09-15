@@ -25,8 +25,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Role is required'],
       enum: {
-        values: ['DONOR', 'VOLUNTEER', 'ADMIN'],
-        message: 'Role must be DONOR, VOLUNTEER, or ADMIN',
+        values: ['DONOR', 'VOLUNTEER', 'ADMIN', 'CUSTOMER'],
+        message: 'Role must be DONOR, VOLUNTEER, ADMIN, or CUSTOMER',
       },
     },
     phone: {
