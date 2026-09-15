@@ -2,28 +2,49 @@ const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema(
   {
-    user: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: [true, 'User ID is required'],
     },
+
     title: {
       type: String,
-      required: true,
+      required: [true, 'Title is required'],
+      trim: true,
     },
+
     message: {
       type: String,
-      required: true,
+      required: [true, 'Message is required'],
+      trim: true,
     },
+
     type: {
       type: String,
-      default: 'INFO',
+      enum: {
+        values: [
+          'ASSIGNMENT_CREATED',
+          'ASSIGNMENT_ACCEPTED',
+          'PICKUP_STARTED',
+          'COLLECTION_COMPLETE',
+          'TRANSPORT_STARTED',
+          'DELIVERY_COMPLETE',
+          'TASK_COMPLETED',
+          'GENERAL',
+        ],
+        message: 'Invalid notification type',
+      },
+      default: 'GENERAL',
     },
-    fulfillmentId: {
+
+    relatedAssignmentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Fulfillment',
+      ref: 'Assignment',
+      default: null,
     },
-    isRead: {
+
+    read: {
       type: Boolean,
       default: false,
     },
@@ -32,6 +53,10 @@ const notificationSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Index for efficient user notification queries
+notificationSchema.index({ userId: 1, createdAt: -1 });
+notificationSchema.index({ userId: 1, read: 1 });
 
 notificationSchema.set('toJSON', {
   transform: function (doc, ret) {
@@ -42,4 +67,6 @@ notificationSchema.set('toJSON', {
   },
 });
 
-module.exports = mongoose.model('Notification', notificationSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
+
+module.exports = Notification;

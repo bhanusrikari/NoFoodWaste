@@ -1,53 +1,49 @@
-const Notification = require('./notification.model');
+const notificationService = require('./notification.service');
 
-const getNotifications = async (req, res, next) => {
-  try {
-    const notifications = await Notification.find({ user: req.user.id })
-      .sort({ createdAt: -1 });
+class NotificationController {
+  async getNotifications(req, res, next) {
+    try {
+      const notifications = await notificationService.getByUserId(req.user.id);
+      const unreadCount = await notificationService.getUnreadCount(req.user.id);
 
-    const unreadCount = notifications.filter(n => !n.isRead).length;
-
-    res.status(200).json({
-      success: true,
-      unreadCount,
-      notifications,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const markAsRead = async (req, res, next) => {
-  try {
-    const notification = await Notification.findById(req.params.id);
-    if (!notification) {
-      return res.status(404).json({ success: false, message: 'Notification not found' });
+      return res.status(200).json({
+        success: true,
+        notifications,
+        unreadCount,
+      });
+    } catch (error) {
+      next(error);
     }
+  }
 
-    if (notification.user.toString() !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Unauthorized' });
+  async markAsRead(req, res, next) {
+    try {
+      const notification = await notificationService.markAsRead(
+        req.params.id,
+        req.user.id
+      );
+
+      return res.status(200).json({
+        success: true,
+        notification,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    notification.isRead = true;
-    await notification.save();
-
-    res.status(200).json({ success: true, notification });
-  } catch (error) {
-    next(error);
   }
-};
 
-const markAllAsRead = async (req, res, next) => {
-  try {
-    await Notification.updateMany({ user: req.user.id, isRead: false }, { isRead: true });
-    res.status(200).json({ success: true, message: 'All notifications marked as read' });
-  } catch (error) {
-    next(error);
+  async markAllAsRead(req, res, next) {
+    try {
+      await notificationService.markAllAsRead(req.user.id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'All notifications marked as read',
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-};
+}
 
-module.exports = {
-  getNotifications,
-  markAsRead,
-  markAllAsRead,
-};
+module.exports = new NotificationController();
