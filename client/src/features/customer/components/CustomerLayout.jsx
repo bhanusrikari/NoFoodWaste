@@ -25,6 +25,18 @@ const CustomerLayout = () => {
           >
             My Requests
           </NavLink>
+          <NavLink
+            to="/customer/donations"
+            className={({ isActive }) => (isActive ? 'customer-nav-link active' : 'customer-nav-link')}
+          >
+            Available Food
+          </NavLink>
+          <NavLink
+            to="/customer/donations/interests"
+            className={({ isActive }) => (isActive ? 'customer-nav-link active' : 'customer-nav-link')}
+          >
+            My Interests
+          </NavLink>
         </div>
       </div>
       <main>
