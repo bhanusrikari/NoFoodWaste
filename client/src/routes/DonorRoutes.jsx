@@ -5,6 +5,7 @@ import AvailableRequirements from '../pages/donor/AvailableRequirements';
 import CreateDonationFlow from '../pages/donor/CreateDonationFlow';
 import MyFulfillments from '../pages/donor/MyFulfillments';
 import FulfillmentDetail from '../pages/donor/FulfillmentDetail';
+import DonationInterests from '../pages/donor/DonationInterests';
 
 const DonorRoutes = () => {
   return (
@@ -12,6 +13,7 @@ const DonorRoutes = () => {
       <Route path="/" element={<DonorDashboard />} />
       <Route path="/requirements" element={<AvailableRequirements />} />
       <Route path="/donate" element={<CreateDonationFlow />} />
+      <Route path="/donations/:id/interests" element={<DonationInterests />} />
       <Route path="/fulfillments" element={<MyFulfillments />} />
       <Route path="/fulfillments/:id" element={<FulfillmentDetail />} />
     </Routes>

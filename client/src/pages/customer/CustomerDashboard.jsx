@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../features/auth/authContext';
 import { getMyFoodRequests } from '../../features/customer/services/foodRequestService';
+import { getAvailableDonations, getMyInterests } from '../../features/customer/services/donationService';
 
 const CustomerDashboard = () => {
   const { currentUser } = useAuth();
@@ -9,17 +10,30 @@ const CustomerDashboard = () => {
     activeCount: 0,
     completedCount: 0,
     mealsReceived: 0,
+    availableDonations: 0,
+    myInterestsCount: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const calculateMetrics = async () => {
       try {
-        const res = await getMyFoodRequests();
-        if (res.success && Array.isArray(res.data)) {
-          const userRequests = res.data;
+        const [reqRes, donRes, intRes] = await Promise.all([
+          getMyFoodRequests().catch(() => ({ success: false })),
+          getAvailableDonations().catch(() => ({ success: false })),
+          getMyInterests().catch(() => ({ success: false })),
+        ]);
 
-          const active = userRequests.filter((req) =>
+        let active = 0;
+        let completed = 0;
+        let meals = 0;
+        let availableDon = 0;
+        let interestsCount = 0;
+
+        if (reqRes.success && Array.isArray(reqRes.data)) {
+          const userRequests = reqRes.data;
+
+          active = userRequests.filter((req) =>
             ['OPEN', 'MATCHED', 'DELIVERY_ASSIGNED', 'OUT_FOR_DELIVERY'].includes(req.status)
           ).length;
 
@@ -27,19 +41,29 @@ const CustomerDashboard = () => {
             ['DELIVERED', 'ACKNOWLEDGED'].includes(req.status)
           );
 
-          const completed = completedRequests.length;
+          completed = completedRequests.length;
 
-          const meals = completedRequests.reduce(
+          meals = completedRequests.reduce(
             (sum, req) => sum + (Number(req.peopleCount) || 0),
             0
           );
-
-          setStats({
-            activeCount: active,
-            completedCount: completed,
-            mealsReceived: meals,
-          });
         }
+
+        if (donRes.success && Array.isArray(donRes.data)) {
+          availableDon = donRes.data.length;
+        }
+
+        if (intRes.success && Array.isArray(intRes.data)) {
+          interestsCount = intRes.data.length;
+        }
+
+        setStats({
+          activeCount: active,
+          completedCount: completed,
+          mealsReceived: meals,
+          availableDonations: availableDon,
+          myInterestsCount: interestsCount,
+        });
       } catch (err) {
         console.error('[CustomerDashboard] Error fetching metrics:', err.message);
       } finally {
@@ -55,7 +79,7 @@ const CustomerDashboard = () => {
       id: 'active-requests',
       title: 'Active Requests',
       value: loading ? '...' : stats.activeCount,
-      description: 'Currently open and ongoing food assistance requests',
+      description: 'Currently open and ongoing food assistance requirements',
     },
     {
       id: 'completed-requests',
@@ -69,6 +93,18 @@ const CustomerDashboard = () => {
       value: loading ? '...' : stats.mealsReceived,
       description: 'Total estimated meals provided from completed deliveries',
     },
+    {
+      id: 'available-donations',
+      title: 'Available Donations',
+      value: loading ? '...' : stats.availableDonations,
+      description: 'Surplus food offerings posted by donors open for interest',
+    },
+    {
+      id: 'my-interests',
+      title: 'My Food Interests',
+      value: loading ? '...' : stats.myInterestsCount,
+      description: 'Donation offerings you have expressed interest in receiving',
+    },
   ];
 
   return (
@@ -78,7 +114,7 @@ const CustomerDashboard = () => {
           Customer Dashboard
         </h1>
         <p style={{ color: '#4b5563', fontSize: '1rem' }}>
-          Welcome back, <strong>{currentUser?.name || 'Customer'}</strong>. Manage your food assistance requirements and track distributions.
+          Welcome back, <strong>{currentUser?.name || 'Customer'}</strong>. Manage your food requirements and explore donor food offerings.
         </p>
       </header>
 
@@ -86,8 +122,8 @@ const CustomerDashboard = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1.5rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '1.25rem',
           marginBottom: '2.5rem',
         }}
       >
@@ -127,18 +163,25 @@ const CustomerDashboard = () => {
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: 0 }}>
             Food Assistance Actions
           </h2>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link
+              to="/customer/donations"
+              className="btn"
+              style={{ width: 'auto', padding: '0.6rem 1.1rem', fontSize: '0.9rem', backgroundColor: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0', fontWeight: 600 }}
+            >
+              Explore Available Food
+            </Link>
             <Link
               to="/customer/requests"
               className="btn"
-              style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.9rem', backgroundColor: '#f3f4f6', color: '#374151' }}
+              style={{ width: 'auto', padding: '0.6rem 1.1rem', fontSize: '0.9rem', backgroundColor: '#f3f4f6', color: '#374151' }}
             >
               View My Requests
             </Link>
             <Link
               to="/customer/request-food"
               className="btn btn-primary"
-              style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.9rem' }}
+              style={{ width: 'auto', padding: '0.6rem 1.1rem', fontSize: '0.9rem' }}
             >
               Create Food Requirement
             </Link>
@@ -146,12 +189,12 @@ const CustomerDashboard = () => {
         </div>
 
         <p style={{ color: '#4b5563', marginBottom: '1.5rem', lineHeight: '1.6' }}>
-          Post food requirements for your organization or community group. Your submitted requests will be made available for matching and distribution in upcoming workflow releases.
+          Manage submitted food requirements ("Food Demand") or discover surplus meals offered directly by donors ("Food Supply").
         </p>
 
         <div style={{ backgroundColor: '#f9fafb', padding: '1.25rem', borderRadius: '6px', borderLeft: '4px solid #10b981' }}>
           <p style={{ fontSize: '0.9rem', color: '#374151', margin: 0 }}>
-            <strong>Phase 3 Active:</strong> Full request management, stage progress timeline, client-side status filtering, and live metric calculations are enabled.
+            <strong>Phase 6 Active:</strong> Donation opportunities discovery, interest registration, and interest status management enabled.
           </p>
         </div>
       </section>

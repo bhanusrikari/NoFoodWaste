@@ -13,6 +13,7 @@ const DonorDashboard = () => {
     totalMealsDonated: 0,
   });
   const [recentFulfillments, setRecentFulfillments] = useState([]);
+  const [myDonations, setMyDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -23,9 +24,10 @@ const DonorDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsData, fulfillmentsData] = await Promise.all([
+      const [statsData, fulfillmentsData, myDonationsData] = await Promise.all([
         donationService.getStats(),
         fulfillmentService.getMy(),
+        donationService.getMy(),
       ]);
 
       if (statsData.success) {
@@ -33,6 +35,9 @@ const DonorDashboard = () => {
       }
       if (fulfillmentsData.success) {
         setRecentFulfillments(fulfillmentsData.fulfillments.slice(0, 5));
+      }
+      if (myDonationsData.success) {
+        setMyDonations(myDonationsData.donations || []);
       }
     } catch (err) {
       setError(err.message || 'Failed to load dashboard data');
@@ -112,6 +117,69 @@ const DonorDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* My Food Donations & Customer Interests Section */}
+      {myDonations.length > 0 && (
+        <div className="card-table" style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3>My Posted Food Offerings ({myDonations.length})</h3>
+            <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>Customer Phase 6 Demand Overview</span>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Donation ID</th>
+                <th>Food & Quantity</th>
+                <th>Pickup Location</th>
+                <th>Status</th>
+                <th>Interested Customers</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {myDonations.map((d) => (
+                <tr key={d.id}>
+                  <td><strong>#D-{d.id.slice(-6).toUpperCase()}</strong></td>
+                  <td>
+                    <strong>{d.quantity} {d.unit || 'Meals'}</strong> — {d.foodType}
+                    <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>Cuisine: {d.cuisine}</div>
+                  </td>
+                  <td>📍 {d.pickupAddress || d.location}</td>
+                  <td>
+                    <span className={`status-badge status-${d.status}`}>
+                      {d.status}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      style={{
+                        backgroundColor: d.interestedCount > 0 ? '#dbeafe' : '#f3f4f6',
+                        color: d.interestedCount > 0 ? '#1e40af' : '#6b7280',
+                        fontWeight: 700,
+                        padding: '0.25rem 0.65rem',
+                        borderRadius: '12px',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      👥 {d.interestedCount || 0} Interested
+                    </span>
+                  </td>
+                  <td>
+                    <Link
+                      to={`/donor/donations/${d.id}/interests`}
+                      className="btn btn-outline"
+                      style={{ padding: '0.3rem 0.65rem', fontSize: '0.8rem' }}
+                    >
+                      View Interested Customers ({d.interestedCount || 0}) →
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Recent Fulfillments Table */}
       <div className="card-table">

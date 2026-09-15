@@ -16,6 +16,9 @@ import CustomerDashboard from './pages/customer/CustomerDashboard';
 import RequestFood from './pages/customer/RequestFood';
 import MyRequests from './pages/customer/MyRequests';
 import RequestDetails from './pages/customer/RequestDetails';
+import AvailableDonations from './pages/customer/AvailableDonations';
+import DonationDetails from './pages/customer/DonationDetails';
+import MyDonationInterests from './pages/customer/MyDonationInterests';
 
 const RootRedirect = () => {
   const { currentUser, isAuthenticated, loading } = useAuth();
@@ -100,6 +103,9 @@ function App() {
             <Route path="request-food" element={<RequestFood />} />
             <Route path="requests" element={<MyRequests />} />
             <Route path="requests/:id" element={<RequestDetails />} />
+            <Route path="donations" element={<AvailableDonations />} />
+            <Route path="donations/interests" element={<MyDonationInterests />} />
+            <Route path="donations/:id" element={<DonationDetails />} />
           </Route>
 
           {/* Fallback & Root Route */}

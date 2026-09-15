@@ -5,7 +5,7 @@ const donationSchema = new mongoose.Schema(
     donor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: [true, 'Donor reference is required'],
     },
     donorType: {
       type: String,
@@ -15,21 +15,21 @@ const donationSchema = new mongoose.Schema(
     foodType: {
       type: String,
       required: [true, 'Food type is required'],
-      enum: ['Cooked Meal', 'Raw Food', 'Packaged Food', 'Bakery', 'Fruits & Vegetables', 'Beverages', 'Other'],
+      trim: true,
     },
     cuisine: {
       type: String,
-      required: [true, 'Cuisine is required'],
       trim: true,
+      default: 'Mixed',
     },
     foodItems: {
       type: String,
-      required: [true, 'Food items description is required'],
       trim: true,
+      default: 'Food items',
     },
     quantity: {
       type: Number,
-      required: [true, 'Quantity is required'],
+      required: [true, 'Quantity/people count is required'],
       min: [1, 'Quantity must be at least 1'],
     },
     unit: {
@@ -39,37 +39,42 @@ const donationSchema = new mongoose.Schema(
     },
     description: {
       type: String,
+      trim: true,
       default: '',
     },
     preparedAt: {
       type: Date,
-      required: [true, 'Prepared at time is required'],
+      default: Date.now,
     },
     expiry: {
       type: Date,
-      required: [true, 'Expiry/Best before time is required'],
     },
     pickupAddress: {
       type: String,
-      required: [true, 'Pickup address is required'],
       trim: true,
     },
     availableFrom: {
       type: String,
-      required: [true, 'Pickup available from time is required'],
+      trim: true,
+      default: '09:00',
     },
     availableUntil: {
       type: String,
-      required: [true, 'Pickup available until time is required'],
+      trim: true,
+      default: '21:00',
     },
     specialInstructions: {
       type: String,
+      trim: true,
       default: '',
     },
     status: {
       type: String,
-      enum: ['AVAILABLE', 'MATCHED', 'COMPLETED', 'CANCELLED'],
       default: 'AVAILABLE',
+      enum: {
+        values: ['AVAILABLE', 'MATCHED', 'FULL', 'EXPIRED', 'CANCELLED', 'CLOSED', 'COMPLETED'],
+        message: 'Invalid donation status',
+      },
     },
   },
   {
@@ -80,6 +85,13 @@ const donationSchema = new mongoose.Schema(
 donationSchema.set('toJSON', {
   transform: function (doc, ret) {
     ret.id = ret._id.toString();
+    ret.location = ret.pickupAddress || ret.location || 'Location not specified';
+    ret.availableDate = ret.preparedAt || ret.availableDate || ret.createdAt;
+    ret.availableTime =
+      ret.availableFrom && ret.availableUntil
+        ? `${ret.availableFrom} - ${ret.availableUntil}`
+        : ret.availableTime || ret.availableFrom || '09:00 - 21:00';
+    ret.notes = ret.description || ret.specialInstructions || ret.notes || '';
     delete ret._id;
     delete ret.__v;
     return ret;
