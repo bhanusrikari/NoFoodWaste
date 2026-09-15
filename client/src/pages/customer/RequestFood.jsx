@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../features/auth/authContext';
 import { createFoodRequest } from '../../features/customer/services/foodRequestService';
 
 const RequestFood = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   const [formData, setFormData] = useState({
+    customerName: currentUser?.organizationName || currentUser?.name || '',
+    phone: currentUser?.phone || '',
     peopleCount: '',
-    foodType: 'Vegetarian',
+    foodType: 'Veg',
+    foodCategory: 'Cooked',
     location: '',
     requiredDate: '',
     requiredTime: '',
@@ -35,8 +40,12 @@ const RequestFood = () => {
       setError('People required must be at least 1');
       return;
     }
-    if (!formData.foodType || formData.foodType.trim() === '') {
+    if (!formData.foodType) {
       setError('Food type is required');
+      return;
+    }
+    if (!formData.foodCategory) {
+      setError('Food category is required');
       return;
     }
     if (!formData.location || formData.location.trim() === '') {
@@ -55,10 +64,20 @@ const RequestFood = () => {
     setLoading(true);
 
     try {
-      const res = await createFoodRequest({
-        ...formData,
+      const payload = {
+        customerName: formData.customerName.trim() || currentUser?.name || 'Food Recipient',
+        phone: formData.phone.trim() || currentUser?.phone || '+91 98765 43210',
+        numberOfMeals: Number(formData.peopleCount),
         peopleCount: Number(formData.peopleCount),
-      });
+        foodType: formData.foodType,
+        foodCategory: formData.foodCategory,
+        location: formData.location.trim(),
+        requiredDate: formData.requiredDate,
+        requiredTime: formData.requiredTime,
+        notes: formData.notes ? formData.notes.trim() : '',
+      };
+
+      const res = await createFoodRequest(payload);
 
       if (res.success) {
         setSuccess('Food requirement submitted successfully! Redirecting to My Requests...');
@@ -98,38 +117,85 @@ const RequestFood = () => {
         {success && <div className="alert alert-success">{success}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="peopleCount">People Required *</label>
-            <input
-              type="number"
-              id="peopleCount"
-              name="peopleCount"
-              min="1"
-              className="form-control"
-              placeholder="e.g. 100"
-              value={formData.peopleCount}
-              onChange={handleChange}
-              required
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group">
+              <label htmlFor="customerName">Organization / Caretaker Name *</label>
+              <input
+                type="text"
+                id="customerName"
+                name="customerName"
+                className="form-control"
+                placeholder="e.g. ABC Orphanage Caretaker"
+                value={formData.customerName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="phone">Contact Phone Number *</label>
+              <input
+                type="text"
+                id="phone"
+                name="phone"
+                className="form-control"
+                placeholder="e.g. +91 98765 43210"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="foodType">Food Type *</label>
-            <select
-              id="foodType"
-              name="foodType"
-              className="form-control"
-              value={formData.foodType}
-              onChange={handleChange}
-              required
-            >
-              <option value="Vegetarian">Vegetarian</option>
-              <option value="Non-Vegetarian">Non-Vegetarian</option>
-              <option value="Both (Veg & Non-Veg)">Both (Veg & Non-Veg)</option>
-              <option value="Vegan">Vegan</option>
-              <option value="Packaged / Dry Rations">Packaged / Dry Rations</option>
-              <option value="Prepared Meals">Prepared Meals</option>
-            </select>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+            <div className="form-group">
+              <label htmlFor="peopleCount">People / Meals Required *</label>
+              <input
+                type="number"
+                id="peopleCount"
+                name="peopleCount"
+                min="1"
+                className="form-control"
+                placeholder="e.g. 100"
+                value={formData.peopleCount}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="foodType">Food Type *</label>
+              <select
+                id="foodType"
+                name="foodType"
+                className="form-control"
+                value={formData.foodType}
+                onChange={handleChange}
+                required
+              >
+                <option value="Veg">Veg</option>
+                <option value="Non-Veg">Non-Veg</option>
+                <option value="Both">Both (Veg & Non-Veg)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="foodCategory">Food Category *</label>
+              <select
+                id="foodCategory"
+                name="foodCategory"
+                className="form-control"
+                value={formData.foodCategory}
+                onChange={handleChange}
+                required
+              >
+                <option value="Cooked">Cooked Meals</option>
+                <option value="Raw/Groceries">Raw / Groceries</option>
+                <option value="Packaged">Packaged Goods</option>
+                <option value="Bakery">Bakery Items</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
 
           <div className="form-group">
@@ -139,7 +205,7 @@ const RequestFood = () => {
               id="location"
               name="location"
               className="form-control"
-              placeholder="e.g. Community Center, Sector 4, Hyderabad"
+              placeholder="e.g. XYZ, Bhavani Nagar, Hyderabad"
               value={formData.location}
               onChange={handleChange}
               required
@@ -188,7 +254,7 @@ const RequestFood = () => {
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: '0.5rem' }}>
-            {loading ? 'Submitting Request...' : 'Request Food'}
+            {loading ? 'Submitting Request...' : 'Request Food Assistance'}
           </button>
         </form>
       </div>

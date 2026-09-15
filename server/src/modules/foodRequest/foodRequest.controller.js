@@ -39,7 +39,7 @@ class FoodRequestController {
 
   async createRequest(req, res, next) {
     try {
-      const validation = validateCreateFoodRequestInput(req.body);
+      const validation = validateCreateFoodRequestInput(req.body, req.user);
       if (!validation.isValid) {
         return res.status(400).json({
           success: false,

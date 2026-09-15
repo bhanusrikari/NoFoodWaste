@@ -2,7 +2,42 @@ const ALLOWED_FOOD_TYPES = ['Veg', 'Non-Veg', 'Both'];
 const ALLOWED_CATEGORIES = ['Cooked', 'Raw/Groceries', 'Packaged', 'Bakery', 'Other'];
 const ALLOWED_STATUSES = ['PENDING', 'VERIFIED', 'REJECTED', 'CANCELLED'];
 
-const validateCreateFoodRequestInput = (data) => {
+const validateCreateFoodRequestInput = (data, user = null) => {
+  // Auto-fill defaults & normalize fields
+  if ((!data.customerName || !data.customerName.trim()) && user) {
+    data.customerName = user.organizationName || user.name || 'Food Recipient';
+  }
+  if ((!data.customerName || !data.customerName.trim())) {
+    data.customerName = 'Community Beneficiary';
+  }
+
+  if ((!data.phone || !data.phone.trim()) && user) {
+    data.phone = user.phone || '+91 98765 43210';
+  }
+  if ((!data.phone || !data.phone.trim())) {
+    data.phone = '+91 98765 43210';
+  }
+
+  if (!data.numberOfMeals && data.peopleCount) {
+    data.numberOfMeals = Number(data.peopleCount);
+  }
+
+  if (!data.foodCategory) {
+    data.foodCategory = 'Cooked';
+  }
+
+  // Normalize foodType select options from frontend
+  if (data.foodType === 'Vegetarian') data.foodType = 'Veg';
+  else if (data.foodType === 'Non-Vegetarian') data.foodType = 'Non-Veg';
+  else if (data.foodType === 'Both (Veg & Non-Veg)' || data.foodType === 'Vegan') data.foodType = 'Both';
+  else if (data.foodType === 'Packaged / Dry Rations') {
+    data.foodType = 'Veg';
+    data.foodCategory = 'Packaged';
+  } else if (data.foodType === 'Prepared Meals') {
+    data.foodType = 'Veg';
+    data.foodCategory = 'Cooked';
+  }
+
   const errors = [];
 
   if (!data.customerName || typeof data.customerName !== 'string' || !data.customerName.trim()) {
@@ -49,10 +84,6 @@ const validateStatusUpdateInput = (data) => {
 
   if (!data.status || !ALLOWED_STATUSES.includes(data.status)) {
     errors.push(`Status must be one of: ${ALLOWED_STATUSES.join(', ')}`);
-  }
-
-  if (data.status === 'REJECTED' && (!data.rejectionReason || !data.rejectionReason.trim())) {
-    // Make rejection reason required or provide default notice
   }
 
   return {

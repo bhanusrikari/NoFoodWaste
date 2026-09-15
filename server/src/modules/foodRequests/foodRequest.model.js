@@ -103,6 +103,6 @@ foodRequestSchema.set('toJSON', {
   },
 });
 
-const FoodRequest = mongoose.model('FoodRequest', foodRequestSchema);
+const FoodRequest = mongoose.models.FoodRequest || mongoose.model('FoodRequest', foodRequestSchema);
 
 module.exports = FoodRequest;
