@@ -5,45 +5,69 @@ import { getMyFoodRequests } from '../../features/customer/services/foodRequestS
 
 const CustomerDashboard = () => {
   const { currentUser } = useAuth();
-  const [activeCount, setActiveCount] = useState(0);
+  const [stats, setStats] = useState({
+    activeCount: 0,
+    completedCount: 0,
+    mealsReceived: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchActiveCount = async () => {
+    const calculateMetrics = async () => {
       try {
         const res = await getMyFoodRequests();
-        if (res.success && res.data) {
-          const openRequests = res.data.filter((req) => req.status === 'OPEN');
-          setActiveCount(openRequests.length);
+        if (res.success && Array.isArray(res.data)) {
+          const userRequests = res.data;
+
+          const active = userRequests.filter((req) =>
+            ['OPEN', 'MATCHED', 'DELIVERY_ASSIGNED', 'OUT_FOR_DELIVERY'].includes(req.status)
+          ).length;
+
+          const completedRequests = userRequests.filter((req) =>
+            ['DELIVERED', 'ACKNOWLEDGED'].includes(req.status)
+          );
+
+          const completed = completedRequests.length;
+
+          const meals = completedRequests.reduce(
+            (sum, req) => sum + (Number(req.peopleCount) || 0),
+            0
+          );
+
+          setStats({
+            activeCount: active,
+            completedCount: completed,
+            mealsReceived: meals,
+          });
         }
       } catch (err) {
-        console.error('[CustomerDashboard] Error fetching active requests:', err.message);
+        console.error('[CustomerDashboard] Error fetching metrics:', err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchActiveCount();
+    calculateMetrics();
   }, []);
 
   const overviewStats = [
     {
       id: 'active-requests',
       title: 'Active Requests',
-      value: loading ? '...' : activeCount,
-      description: 'Currently open food assistance requests',
+      value: loading ? '...' : stats.activeCount,
+      description: 'Currently open and ongoing food assistance requests',
     },
     {
       id: 'completed-requests',
       title: 'Completed Requests',
-      value: 0,
-      description: 'Successfully delivered food requirements (Phase 3+)',
+      value: loading ? '...' : stats.completedCount,
+      description: 'Successfully delivered and acknowledged food requirements',
     },
     {
       id: 'meals-received',
       title: 'Meals Received',
-      value: 0,
-      description: 'Total estimated meals provided (Phase 3+)',
+      value: loading ? '...' : stats.mealsReceived,
+      description: 'Total estimated meals provided from completed deliveries',
     },
   ];
 
@@ -103,13 +127,22 @@ const CustomerDashboard = () => {
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: 0 }}>
             Food Assistance Actions
           </h2>
-          <Link
-            to="/customer/request-food"
-            className="btn btn-primary"
-            style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.9rem' }}
-          >
-            Create Food Requirement
-          </Link>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <Link
+              to="/customer/requests"
+              className="btn"
+              style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.9rem', backgroundColor: '#f3f4f6', color: '#374151' }}
+            >
+              View My Requests
+            </Link>
+            <Link
+              to="/customer/request-food"
+              className="btn btn-primary"
+              style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.9rem' }}
+            >
+              Create Food Requirement
+            </Link>
+          </div>
         </div>
 
         <p style={{ color: '#4b5563', marginBottom: '1.5rem', lineHeight: '1.6' }}>
@@ -118,7 +151,7 @@ const CustomerDashboard = () => {
 
         <div style={{ backgroundColor: '#f9fafb', padding: '1.25rem', borderRadius: '6px', borderLeft: '4px solid #10b981' }}>
           <p style={{ fontSize: '0.9rem', color: '#374151', margin: 0 }}>
-            <strong>Phase 2 Active:</strong> Food requirement creation and request tracking are fully active. Matching, volunteer delivery, and receipt acknowledgement will be enabled in subsequent workflow releases.
+            <strong>Phase 3 Active:</strong> Full request management, stage progress timeline, client-side status filtering, and live metric calculations are enabled.
           </p>
         </div>
       </section>
