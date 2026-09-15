@@ -25,11 +25,63 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Role is required'],
       enum: {
-        values: ['DONOR', 'VOLUNTEER', 'ADMIN'],
-        message: 'Role must be DONOR, VOLUNTEER, or ADMIN',
+        values: ['DONOR', 'VOLUNTEER', 'ADMIN', 'CUSTOMER'],
+        message: 'Role must be DONOR, VOLUNTEER, ADMIN, or CUSTOMER',
       },
     },
     phone: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    verificationStatus: {
+      type: String,
+      enum: {
+        values: ['PENDING_VERIFICATION', 'VERIFIED', 'REJECTED'],
+        message: 'Invalid verification status',
+      },
+      default: 'VERIFIED',
+    },
+    rejectionReason: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    availabilityStatus: {
+      type: String,
+      enum: {
+        values: ['AVAILABLE', 'ASSIGNED', 'ON_DELIVERY', 'OFFLINE'],
+        message: 'Invalid availability status',
+      },
+      default: 'AVAILABLE',
+    },
+    accountStatus: {
+      type: String,
+      enum: {
+        values: ['ACTIVE', 'INACTIVE'],
+        message: 'Invalid account status',
+      },
+      default: 'ACTIVE',
+    },
+    vehicleType: {
+      type: String,
+      enum: {
+        values: ['Two Wheeler', 'Three Wheeler', 'Four Wheeler', 'Van', 'None'],
+        message: 'Invalid vehicle type',
+      },
+      default: 'Two Wheeler',
+    },
+    vehicleNumber: {
+      type: String,
+      trim: true,
+      default: 'TS 09 EQ 4521',
+    },
+    city: {
+      type: String,
+      trim: true,
+      default: 'Hyderabad',
+    },
+    notes: {
       type: String,
       trim: true,
       default: '',

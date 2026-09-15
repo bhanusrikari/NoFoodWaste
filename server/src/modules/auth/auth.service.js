@@ -64,6 +64,50 @@ class AuthService {
     }
     return user.toJSON();
   }
+
+  async seedInitialUsers() {
+    const defaultUsers = [
+      {
+        name: 'System Admin',
+        email: 'admin@nofoodwaste.org',
+        password: 'Admin123!',
+        role: 'ADMIN',
+        accountStatus: 'ACTIVE',
+      },
+      {
+        name: 'Demo Donor',
+        email: 'donor@nofoodwaste.org',
+        password: 'Password123!',
+        role: 'DONOR',
+        accountStatus: 'ACTIVE',
+      },
+      {
+        name: 'Demo Volunteer',
+        email: 'volunteer@nofoodwaste.org',
+        password: 'Password123!',
+        role: 'VOLUNTEER',
+        accountStatus: 'ACTIVE',
+      },
+      {
+        name: 'Hope Orphanage Customer',
+        email: 'customer@nofoodwaste.org',
+        password: 'Password123!',
+        role: 'CUSTOMER',
+        accountStatus: 'ACTIVE',
+      },
+    ];
+
+    for (const u of defaultUsers) {
+      let existing = await User.findOne({ email: u.email });
+      if (!existing) {
+        await User.create(u);
+      } else {
+        existing.password = u.password;
+        existing.accountStatus = 'ACTIVE';
+        await existing.save();
+      }
+    }
+  }
 }
 
 module.exports = new AuthService();
