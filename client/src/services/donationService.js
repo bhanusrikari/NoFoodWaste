@@ -34,3 +34,21 @@ export const createDonation = async (donationData) => {
   const response = await api.post('/donations', donationData);
   return response.data;
 };
+
+export const getMyDonations = async () => {
+  const response = await api.get('/donations/my');
+  return response.data;
+};
+
+export const donationService = {
+  getAllDonations,
+  getDonationById,
+  verifyDonation,
+  assignBeneficiary,
+  flagOrCancelDonation,
+  getOpenRequestsForMatching,
+  createDonation,
+  getMyDonations,
+};
+
+export default donationService;
