@@ -4,13 +4,24 @@ import { AuthProvider, useAuth } from './features/auth/authContext';
 import Navbar from './components/Navbar';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import DonorDashboard from './pages/DonorDashboard';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import AssignmentDetails from './pages/volunteer/AssignmentDetails';
 import FoodSafetyVerification from './pages/volunteer/FoodSafetyVerification';
 import DeliveryConfirmation from './pages/volunteer/DeliveryConfirmation';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
+import DonorRoutes from './routes/DonorRoutes';
+import RecipientRoutes from './routes/RecipientRoutes';
+
+// Customer Feature Imports
+import CustomerLayout from './features/customer/components/CustomerLayout';
+import CustomerDashboard from './pages/customer/CustomerDashboard';
+import RequestFood from './pages/customer/RequestFood';
+import MyRequests from './pages/customer/MyRequests';
+import RequestDetails from './pages/customer/RequestDetails';
+import AvailableDonations from './pages/customer/AvailableDonations';
+import DonationDetails from './pages/customer/DonationDetails';
+import MyDonationInterests from './pages/customer/MyDonationInterests';
 
 const RootRedirect = () => {
   const { currentUser, isAuthenticated, loading } = useAuth();
@@ -28,7 +39,9 @@ const RootRedirect = () => {
   }
 
   if (currentUser.role === 'DONOR') return <Navigate to="/donor" replace />;
+  if (currentUser.role === 'CUSTOMER') return <Navigate to="/recipient" replace />;
   if (currentUser.role === 'VOLUNTEER') return <Navigate to="/volunteer" replace />;
+  if (currentUser.role === 'CUSTOMER') return <Navigate to="/customer" replace />;
   if (currentUser.role === 'ADMIN') return <Navigate to="/admin" replace />;
 
   return <Navigate to="/login" replace />;
@@ -44,15 +57,25 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes */}
+          {/* Modular Donor & Recipient Routes */}
           <Route
-            path="/donor"
+            path="/donor/*"
             element={
               <ProtectedRoute allowedRoles={['DONOR']}>
-                <DonorDashboard />
+                <DonorRoutes />
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/recipient/*"
+            element={
+              <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                <RecipientRoutes />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Volunteer & Admin Routes */}
           <Route
             path="/volunteer"
             element={
@@ -93,6 +116,24 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Protected Customer Routes */}
+          <Route
+            path="/customer"
+            element={
+              <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                <CustomerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<CustomerDashboard />} />
+            <Route path="request-food" element={<RequestFood />} />
+            <Route path="requests" element={<MyRequests />} />
+            <Route path="requests/:id" element={<RequestDetails />} />
+            <Route path="donations" element={<AvailableDonations />} />
+            <Route path="donations/interests" element={<MyDonationInterests />} />
+            <Route path="donations/:id" element={<DonationDetails />} />
+          </Route>
 
           {/* Fallback & Root Route */}
           <Route path="/" element={<RootRedirect />} />

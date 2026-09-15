@@ -7,16 +7,19 @@ const notificationSchema = new mongoose.Schema(
       ref: 'User',
       required: [true, 'User ID is required'],
     },
+
     title: {
       type: String,
       required: [true, 'Title is required'],
       trim: true,
     },
+
     message: {
       type: String,
       required: [true, 'Message is required'],
       trim: true,
     },
+
     type: {
       type: String,
       enum: {
@@ -34,11 +37,13 @@ const notificationSchema = new mongoose.Schema(
       },
       default: 'GENERAL',
     },
+
     relatedAssignmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Assignment',
       default: null,
     },
+
     read: {
       type: Boolean,
       default: false,

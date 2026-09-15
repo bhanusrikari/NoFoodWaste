@@ -113,8 +113,10 @@ const Register = () => {
               onChange={handleChange}
               required
             >
-              <option value="DONOR">Donor</option>
+              <option value="DONOR">Donor (Individual, Hotel, Restaurant, Caterer)</option>
+              <option value="CUSTOMER">Food Recipient / Beneficiary (Shelter, Orphanage, Community)</option>
               <option value="VOLUNTEER">Volunteer</option>
+              <option value="CUSTOMER">Customer / Recipient</option>
             </select>
           </div>
 
