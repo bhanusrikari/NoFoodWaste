@@ -1,8 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('./src/modules/auth/auth.model');
-const Donation = require('./src/modules/donations/donation.model');
-const DonationInterest = require('./src/modules/donations/donationInterest.model');
+const Donation = require('./src/modules/donation/donation.model');
+const DonationInterest = require('./src/modules/donation/donationInterest.model');
 const app = require('./src/app');
 const http = require('http');
 
