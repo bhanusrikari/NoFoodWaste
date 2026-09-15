@@ -9,6 +9,12 @@ import VolunteerDashboard from './pages/VolunteerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
 
+// Customer Feature Imports
+import CustomerLayout from './features/customer/components/CustomerLayout';
+import CustomerDashboard from './pages/customer/CustomerDashboard';
+import RequestFood from './pages/customer/RequestFood';
+import MyRequests from './pages/customer/MyRequests';
+
 const RootRedirect = () => {
   const { currentUser, isAuthenticated, loading } = useAuth();
 
@@ -26,6 +32,7 @@ const RootRedirect = () => {
 
   if (currentUser.role === 'DONOR') return <Navigate to="/donor" replace />;
   if (currentUser.role === 'VOLUNTEER') return <Navigate to="/volunteer" replace />;
+  if (currentUser.role === 'CUSTOMER') return <Navigate to="/customer" replace />;
   if (currentUser.role === 'ADMIN') return <Navigate to="/admin" replace />;
 
   return <Navigate to="/login" replace />;
@@ -66,6 +73,20 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Protected Customer Routes */}
+          <Route
+            path="/customer"
+            element={
+              <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                <CustomerLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<CustomerDashboard />} />
+            <Route path="request-food" element={<RequestFood />} />
+            <Route path="requests" element={<MyRequests />} />
+          </Route>
 
           {/* Fallback & Root Route */}
           <Route path="/" element={<RootRedirect />} />

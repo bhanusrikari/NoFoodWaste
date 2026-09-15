@@ -13,9 +13,26 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand">
-        🌱 NoFoodWaste
-      </Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+        <Link to="/" className="navbar-brand">
+          NoFoodWaste
+        </Link>
+
+        {isAuthenticated && currentUser?.role === 'CUSTOMER' && (
+          <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
+            <Link to="/customer" style={{ color: '#374151' }}>
+              Dashboard
+            </Link>
+            <Link to="/customer/request-food" style={{ color: '#374151' }}>
+              Request Food
+            </Link>
+            <Link to="/customer/requests" style={{ color: '#374151' }}>
+              My Requests
+            </Link>
+          </div>
+        )}
+      </div>
+
       <div className="navbar-user">
         {isAuthenticated ? (
           <>
