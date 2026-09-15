@@ -6,6 +6,9 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import DonorDashboard from './pages/DonorDashboard';
 import VolunteerDashboard from './pages/VolunteerDashboard';
+import AssignmentDetails from './pages/volunteer/AssignmentDetails';
+import FoodSafetyVerification from './pages/volunteer/FoodSafetyVerification';
+import DeliveryConfirmation from './pages/volunteer/DeliveryConfirmation';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
 
@@ -55,6 +58,30 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['VOLUNTEER']}>
                 <VolunteerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/volunteer/assignments/:id"
+            element={
+              <ProtectedRoute allowedRoles={['VOLUNTEER']}>
+                <AssignmentDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/volunteer/assignments/:id/verify"
+            element={
+              <ProtectedRoute allowedRoles={['VOLUNTEER']}>
+                <FoodSafetyVerification />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/volunteer/assignments/:id/delivery"
+            element={
+              <ProtectedRoute allowedRoles={['VOLUNTEER']}>
+                <DeliveryConfirmation />
               </ProtectedRoute>
             }
           />

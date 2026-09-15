@@ -39,6 +39,10 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
 // Health Check
 app.get('/health', (req, res) => {
   res.status(200).json({ success: true, message: 'NoFoodWaste API Server is healthy' });
