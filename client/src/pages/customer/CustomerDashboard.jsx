@@ -1,28 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../features/auth/authContext';
+import { getMyFoodRequests } from '../../features/customer/services/foodRequestService';
 
 const CustomerDashboard = () => {
   const { currentUser } = useAuth();
+  const [activeCount, setActiveCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  // Phase 1 Mock Overview Statistics (Structured for future API integration)
+  useEffect(() => {
+    const fetchActiveCount = async () => {
+      try {
+        const res = await getMyFoodRequests();
+        if (res.success && res.data) {
+          const openRequests = res.data.filter((req) => req.status === 'OPEN');
+          setActiveCount(openRequests.length);
+        }
+      } catch (err) {
+        console.error('[CustomerDashboard] Error fetching active requests:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActiveCount();
+  }, []);
+
   const overviewStats = [
     {
       id: 'active-requests',
       title: 'Active Requests',
-      value: 0,
-      description: 'Pending and ongoing food assistance requests',
+      value: loading ? '...' : activeCount,
+      description: 'Currently open food assistance requests',
     },
     {
       id: 'completed-requests',
       title: 'Completed Requests',
       value: 0,
-      description: 'Successfully delivered food requirements',
+      description: 'Successfully delivered food requirements (Phase 3+)',
     },
     {
       id: 'meals-received',
       title: 'Meals Received',
       value: 0,
-      description: 'Total estimated meals provided',
+      description: 'Total estimated meals provided (Phase 3+)',
     },
   ];
 
@@ -57,7 +78,7 @@ const CustomerDashboard = () => {
               border: '1px solid #e5e7eb',
             }}
           >
-            <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', tracking: '0.05em' }}>
+            <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {stat.title}
             </h3>
             <p style={{ fontSize: '2.25rem', fontWeight: 700, color: '#10b981', margin: '0.5rem 0' }}>
@@ -78,15 +99,26 @@ const CustomerDashboard = () => {
           border: '1px solid #e5e7eb',
         }}
       >
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', marginBottom: '1rem' }}>
-          Food Assistance Portal
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: 0 }}>
+            Food Assistance Actions
+          </h2>
+          <Link
+            to="/customer/request-food"
+            className="btn btn-primary"
+            style={{ width: 'auto', padding: '0.6rem 1.25rem', fontSize: '0.9rem' }}
+          >
+            Create Food Requirement
+          </Link>
+        </div>
+
         <p style={{ color: '#4b5563', marginBottom: '1.5rem', lineHeight: '1.6' }}>
-          The Customer Portal allows verified recipient organizations and individuals to post food requirements, connect with local donors, and track food redistribution workflows.
+          Post food requirements for your organization or community group. Your submitted requests will be made available for matching and distribution in upcoming workflow releases.
         </p>
+
         <div style={{ backgroundColor: '#f9fafb', padding: '1.25rem', borderRadius: '6px', borderLeft: '4px solid #10b981' }}>
           <p style={{ fontSize: '0.9rem', color: '#374151', margin: 0 }}>
-            <strong>Phase 1 Foundation Active:</strong> Full request creation, smart donor matching, and live delivery tracking will be enabled in subsequent workflow releases.
+            <strong>Phase 2 Active:</strong> Food requirement creation and request tracking are fully active. Matching, volunteer delivery, and receipt acknowledgement will be enabled in subsequent workflow releases.
           </p>
         </div>
       </section>

@@ -14,6 +14,7 @@ import CustomerLayout from './features/customer/components/CustomerLayout';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import RequestFood from './pages/customer/RequestFood';
 import MyRequests from './pages/customer/MyRequests';
+import RequestDetails from './pages/customer/RequestDetails';
 
 const RootRedirect = () => {
   const { currentUser, isAuthenticated, loading } = useAuth();
@@ -86,6 +87,7 @@ function App() {
             <Route index element={<CustomerDashboard />} />
             <Route path="request-food" element={<RequestFood />} />
             <Route path="requests" element={<MyRequests />} />
+            <Route path="requests/:id" element={<RequestDetails />} />
           </Route>
 
           {/* Fallback & Root Route */}
