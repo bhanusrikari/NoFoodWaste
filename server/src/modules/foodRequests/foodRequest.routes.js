@@ -11,6 +11,7 @@ router.use(authenticate, authorizeRoles('CUSTOMER'));
 router.post('/', foodRequestController.createRequest);
 router.get('/my', foodRequestController.getMyRequests);
 router.get('/:id/tracking', foodRequestController.getTrackingInfo);
+router.patch('/:id/acknowledge', foodRequestController.acknowledgeRequest);
 router.get('/:id', foodRequestController.getRequestById);
 
 module.exports = router;

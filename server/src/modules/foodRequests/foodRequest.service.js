@@ -73,6 +73,77 @@ class FoodRequestService {
       },
     };
   }
+
+  async acknowledgeRequest(requestId, customerId) {
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(requestId)) {
+      const error = new Error('Food request not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const request = await FoodRequest.findById(requestId);
+
+    if (!request) {
+      const error = new Error('Food request not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Ownership Authorization Check
+    if (request.customer.toString() !== customerId.toString()) {
+      const error = new Error('Forbidden: You can only acknowledge your own food requests');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // Idempotency Check: if already ACKNOWLEDGED, return existing record
+    if (request.status === 'ACKNOWLEDGED') {
+      return request.toJSON();
+    }
+
+    if (['REJECTED', 'CANCELLED'].includes(request.status)) {
+      const error = new Error('Cannot acknowledge a cancelled or rejected food request');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    if (request.status !== 'DELIVERED') {
+      const error = new Error('Food delivery has not been completed yet.');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    // Atomic / Race-safe transition from DELIVERED -> ACKNOWLEDGED
+    const updatedRequest = await FoodRequest.findOneAndUpdate(
+      {
+        _id: requestId,
+        customer: customerId,
+        status: 'DELIVERED',
+      },
+      {
+        $set: {
+          status: 'ACKNOWLEDGED',
+          'acknowledgement.acknowledged': true,
+          'acknowledgement.acknowledgedAt': new Date(),
+          'acknowledgement.acknowledgedBy': customerId,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      const rechecked = await FoodRequest.findById(requestId);
+      if (rechecked && rechecked.customer.toString() === customerId.toString() && rechecked.status === 'ACKNOWLEDGED') {
+        return rechecked.toJSON();
+      }
+      const error = new Error('Food delivery has not been completed yet.');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    return updatedRequest.toJSON();
+  }
 }
 
 module.exports = new FoodRequestService();

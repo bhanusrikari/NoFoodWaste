@@ -72,6 +72,21 @@ const foodRequestSchema = new mongoose.Schema(
       minutes: { type: Number, default: null },
       updatedAt: { type: Date, default: null },
     },
+    acknowledgement: {
+      acknowledged: {
+        type: Boolean,
+        default: false,
+      },
+      acknowledgedAt: {
+        type: Date,
+        default: null,
+      },
+      acknowledgedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+      },
+    },
   },
   {
     timestamps: true,

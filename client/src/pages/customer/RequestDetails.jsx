@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getFoodRequestById } from '../../features/customer/services/foodRequestService';
+import { getFoodRequestById, acknowledgeFoodRequest } from '../../features/customer/services/foodRequestService';
 import RequestStatusBadge from '../../features/customer/components/RequestStatusBadge';
 import RequestProgressTimeline from '../../features/customer/components/RequestProgressTimeline';
 import DeliveryTrackingMap from '../../features/customer/components/DeliveryTrackingMap';
@@ -20,10 +20,34 @@ const RequestDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Acknowledgement State
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [acknowledging, setAcknowledging] = useState(false);
+  const [ackError, setAckError] = useState('');
+
   // Live Tracking State
   const [liveLocation, setLiveLocation] = useState(null);
   const [socketStatus, setSocketStatus] = useState('Disconnected');
   const [lastUpdated, setLastUpdated] = useState(null);
+
+  const handleAcknowledge = async () => {
+    setAcknowledging(true);
+    setAckError('');
+    try {
+      const res = await acknowledgeFoodRequest(request.id);
+      if (res.success && res.data) {
+        setRequest(res.data);
+        setShowConfirmModal(false);
+      } else {
+        setAckError(res.message || 'Failed to acknowledge food receipt.');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to acknowledge food receipt.';
+      setAckError(msg);
+    } finally {
+      setAcknowledging(false);
+    }
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -147,6 +171,68 @@ const RequestDetails = () => {
 
         {/* Progress Timeline Component */}
         <RequestProgressTimeline status={request.status} />
+
+        {/* Phase 5: Customer Delivery Acknowledgement Action (Rendered when status is DELIVERED) */}
+        {request.status === 'DELIVERED' && (
+          <section
+            style={{
+              backgroundColor: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              marginBottom: '2rem',
+            }}
+          >
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#166534', margin: '0 0 0.5rem 0' }}>
+              Delivery Completed
+            </h3>
+            <p style={{ color: '#15803d', fontSize: '0.95rem', margin: '0 0 1rem 0' }}>
+              Your food requirement has been marked as delivered. Please confirm that you have received the food.
+            </p>
+            <button
+              onClick={() => {
+                setAckError('');
+                setShowConfirmModal(true);
+              }}
+              className="btn btn-primary"
+              style={{
+                width: 'auto',
+                padding: '0.6rem 1.25rem',
+                fontSize: '0.9rem',
+                backgroundColor: '#10b981',
+                borderColor: '#10b981',
+                fontWeight: 600,
+              }}
+            >
+              Confirm Food Received
+            </button>
+          </section>
+        )}
+
+        {/* Phase 5: Acknowledgement Success State (Rendered when status is ACKNOWLEDGED) */}
+        {request.status === 'ACKNOWLEDGED' && (
+          <section
+            style={{
+              backgroundColor: '#f0fdfa',
+              border: '1px solid #99f6e4',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              marginBottom: '2rem',
+            }}
+          >
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f766e', margin: '0 0 0.25rem 0' }}>
+              Receipt Confirmed
+            </h3>
+            <p style={{ color: '#0f766e', fontSize: '0.95rem', margin: 0, fontWeight: 600 }}>
+              Food received successfully.
+            </p>
+            {request.acknowledgement?.acknowledgedAt && (
+              <p style={{ color: '#134e4a', fontSize: '0.85rem', margin: '0.4rem 0 0 0' }}>
+                Acknowledged on: {new Date(request.acknowledgement.acknowledgedAt).toLocaleString()}
+              </p>
+            )}
+          </section>
+        )}
 
         {/* Live Delivery Tracking Panel (Rendered when status is DELIVERY_ASSIGNED or OUT_FOR_DELIVERY) */}
         {isTrackingActive && (
@@ -290,6 +376,85 @@ const RequestDetails = () => {
           </p>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              padding: '2rem',
+              maxWidth: '480px',
+              width: '90%',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+              border: '1px solid #e5e7eb',
+            }}
+          >
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111827', margin: '0 0 0.75rem 0' }}>
+              Confirm Food Receipt
+            </h3>
+            <p style={{ color: '#4b5563', fontSize: '0.95rem', lineHeight: '1.5', margin: '0 0 1.5rem 0' }}>
+              Please confirm that you have received the food for this request.
+            </p>
+
+            {ackError && (
+              <div className="alert alert-danger" style={{ marginBottom: '1rem', fontSize: '0.85rem' }}>
+                {ackError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                disabled={acknowledging}
+                style={{
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  padding: '0.55rem 1.1rem',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: acknowledging ? 'not-allowed' : 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAcknowledge}
+                disabled={acknowledging}
+                style={{
+                  backgroundColor: '#10b981',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0.55rem 1.1rem',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: acknowledging ? 'not-allowed' : 'pointer',
+                  opacity: acknowledging ? 0.7 : 1,
+                }}
+              >
+                {acknowledging ? 'Confirming...' : 'Confirm Receipt'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

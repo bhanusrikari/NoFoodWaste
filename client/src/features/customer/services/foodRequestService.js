@@ -15,10 +15,16 @@ export const getFoodRequestById = async (id) => {
   return response.data;
 };
 
+export const acknowledgeFoodRequest = async (id) => {
+  const response = await api.patch(`/food-requests/${id}/acknowledge`);
+  return response.data;
+};
+
 const foodRequestService = {
   createFoodRequest,
   getMyFoodRequests,
   getFoodRequestById,
+  acknowledgeFoodRequest,
 };
 
 export default foodRequestService;

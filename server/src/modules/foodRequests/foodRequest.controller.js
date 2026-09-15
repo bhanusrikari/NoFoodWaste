@@ -71,6 +71,23 @@ class FoodRequestController {
       next(error);
     }
   }
+
+  async acknowledgeRequest(req, res, next) {
+    try {
+      const customerId = req.user.id;
+      const requestId = req.params.id;
+
+      const request = await foodRequestService.acknowledgeRequest(requestId, customerId);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Food receipt acknowledged successfully',
+        data: request,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new FoodRequestController();
