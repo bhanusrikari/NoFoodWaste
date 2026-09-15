@@ -26,7 +26,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
         <Link to="/" className="navbar-brand">
-          🌱 NoFoodWaste
+          NoFoodWaste
         </Link>
 
         {isAuthenticated && currentUser?.role === 'DONOR' && <DonorNavLinks />}
@@ -37,22 +37,46 @@ const Navbar = () => {
         {isAuthenticated ? (
           <>
             <NotificationBell isAuthenticated={isAuthenticated} />
+
             <div>
               <span>Welcome, <strong>{currentUser.name}</strong></span>{' '}
               <span className={`user-badge ${currentUser.role.toLowerCase()}`}>
                 {getRoleLabel(currentUser.role)}
               </span>
             </div>
-            <button onClick={handleLogout} className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+
+            <button
+              onClick={handleLogout}
+              className="btn btn-secondary"
+              style={{
+                padding: '0.4rem 0.8rem',
+                fontSize: '0.85rem'
+              }}
+            >
               Logout
             </button>
           </>
         ) : (
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <Link to="/login" className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}>
+            <Link
+              to="/login"
+              className="btn btn-outline"
+              style={{
+                padding: '0.4rem 0.8rem',
+                fontSize: '0.9rem'
+              }}
+            >
               Login
             </Link>
-            <Link to="/register" className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}>
+
+            <Link
+              to="/register"
+              className="btn btn-primary"
+              style={{
+                padding: '0.4rem 0.8rem',
+                fontSize: '0.9rem'
+              }}
+            >
               Register
             </Link>
           </div>

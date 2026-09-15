@@ -285,6 +285,35 @@ a:hover {
   right: 0;
   top: 40px;
   width: 320px;
+/* Customer Sub-navigation Bar */
+.customer-nav-bar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.customer-nav-link {
+  color: #4b5563;
+  padding: 0.75rem 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-block;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.customer-nav-link:hover {
+  color: #10b981;
+  text-decoration: none;
+}
+
+.customer-nav-link.active {
+  color: #10b981;
+  border-bottom-color: #10b981;
+  font-weight: 600;
+}
+
+/* Dashboard placeholders */
+.dashboard-card {
   background: white;
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);

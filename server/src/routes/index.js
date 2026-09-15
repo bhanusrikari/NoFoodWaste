@@ -4,6 +4,7 @@ const foodRequirementRoutes = require('../modules/foodRequirement/foodRequiremen
 const donationRoutes = require('../modules/donation/donation.routes');
 const fulfillmentRoutes = require('../modules/fulfillment/fulfillment.routes');
 const notificationRoutes = require('../modules/notification/notification.routes');
+const foodRequestRoutes = require('../modules/foodRequests/foodRequest.routes');
 const { authenticate } = require('../middleware/auth.middleware');
 const { authorizeRoles } = require('../middleware/role.middleware');
 
@@ -15,6 +16,9 @@ router.use('/food-requirements', foodRequirementRoutes);
 router.use('/donations', donationRoutes);
 router.use('/fulfillments', fulfillmentRoutes);
 router.use('/notifications', notificationRoutes);
+
+// Mount Food Request routes
+router.use('/food-requests', foodRequestRoutes);
 
 // Temporary Test Endpoints for Role Verification
 router.get('/admin/test', authenticate, authorizeRoles('ADMIN'), (req, res) => {

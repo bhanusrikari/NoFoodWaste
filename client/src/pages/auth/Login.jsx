@@ -32,6 +32,7 @@ const Login = () => {
         const role = res.user.role;
         if (role === 'DONOR') navigate('/donor');
         else if (role === 'VOLUNTEER') navigate('/volunteer');
+        else if (role === 'CUSTOMER') navigate('/customer');
         else if (role === 'ADMIN') navigate('/admin');
         else navigate('/');
       }

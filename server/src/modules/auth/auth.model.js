@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Name is required'],
       trim: true,
     },
+
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -15,12 +16,14 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
     password: {
       type: String,
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters long'],
       select: false,
     },
+
     role: {
       type: String,
       required: [true, 'Role is required'],
@@ -29,6 +32,7 @@ const userSchema = new mongoose.Schema(
         message: 'Role must be DONOR, VOLUNTEER, ADMIN, or CUSTOMER',
       },
     },
+
     phone: {
       type: String,
       trim: true,
@@ -45,27 +49,14 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-// Compare password method
+// Compare entered password with hashed password
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Transform output JSON to exclude password and format id
-userSchema.set('toJSON', {
-  transform: function (doc, ret) {
-    ret.id = ret._id.toString();
-    delete ret._id;
-    delete ret.__v;
-    delete ret.password;
-    return ret;
-  },
-});
-
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);
