@@ -55,6 +55,22 @@ class FoodRequestController {
       next(error);
     }
   }
+
+  async getTrackingInfo(req, res, next) {
+    try {
+      const customerId = req.user.id;
+      const requestId = req.params.id;
+
+      const trackingInfo = await foodRequestService.getTrackingInfo(requestId, customerId);
+
+      return res.status(200).json({
+        success: true,
+        data: trackingInfo,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new FoodRequestController();

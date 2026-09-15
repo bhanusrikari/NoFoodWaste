@@ -41,6 +41,38 @@ class FoodRequestService {
 
     return request.toJSON();
   }
+
+  async getTrackingInfo(requestId, customerId) {
+    const request = await this.getRequestById(requestId, customerId);
+
+    const isActive = ['DELIVERY_ASSIGNED', 'OUT_FOR_DELIVERY'].includes(request.status);
+
+    return {
+      requestId: request.id,
+      status: request.status,
+      tracking: {
+        active: isActive,
+        vehicleLocation: request.currentLocation && request.currentLocation.latitude
+          ? request.currentLocation
+          : null,
+        destination: request.destinationCoords && request.destinationCoords.latitude
+          ? request.destinationCoords
+          : null,
+        pickupLocation: request.pickupCoords && request.pickupCoords.latitude
+          ? request.pickupCoords
+          : null,
+        volunteer: request.assignedVolunteer && request.assignedVolunteer.name
+          ? request.assignedVolunteer
+          : null,
+        vehicle: request.assignedVehicle && request.assignedVehicle.type
+          ? request.assignedVehicle
+          : null,
+        eta: request.eta && request.eta.minutes
+          ? request.eta
+          : null,
+      },
+    };
+  }
 }
 
 module.exports = new FoodRequestService();

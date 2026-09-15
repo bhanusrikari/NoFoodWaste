@@ -44,6 +44,34 @@ const foodRequestSchema = new mongoose.Schema(
         message: 'Invalid request status',
       },
     },
+    // Optional Tracking Contract Integration Fields
+    destinationCoords: {
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+    },
+    pickupCoords: {
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+    },
+    currentLocation: {
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+      updatedAt: { type: Date, default: null },
+    },
+    assignedVolunteer: {
+      id: { type: String, default: null },
+      name: { type: String, default: null },
+      phone: { type: String, default: null },
+    },
+    assignedVehicle: {
+      id: { type: String, default: null },
+      type: { type: String, default: null },
+      registrationNumber: { type: String, default: null },
+    },
+    eta: {
+      minutes: { type: Number, default: null },
+      updatedAt: { type: Date, default: null },
+    },
   },
   {
     timestamps: true,
