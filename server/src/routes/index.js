@@ -1,13 +1,21 @@
 const express = require('express');
 const authRoutes = require('../modules/auth/auth.routes');
+const foodRequirementRoutes = require('../modules/foodRequirement/foodRequirement.routes');
+const donationRoutes = require('../modules/donation/donation.routes');
+const fulfillmentRoutes = require('../modules/fulfillment/fulfillment.routes');
+const notificationRoutes = require('../modules/notification/notification.routes');
 const foodRequestRoutes = require('../modules/foodRequests/foodRequest.routes');
 const { authenticate } = require('../middleware/auth.middleware');
 const { authorizeRoles } = require('../middleware/role.middleware');
 
 const router = express.Router();
 
-// Mount Auth routes
+// Mount Feature routes
 router.use('/auth', authRoutes);
+router.use('/food-requirements', foodRequirementRoutes);
+router.use('/donations', donationRoutes);
+router.use('/fulfillments', fulfillmentRoutes);
+router.use('/notifications', notificationRoutes);
 
 // Mount Food Request routes
 router.use('/food-requests', foodRequestRoutes);
