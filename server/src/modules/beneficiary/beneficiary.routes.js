@@ -1,17 +1,21 @@
 const express = require('express');
+const router = express.Router();
 const beneficiaryController = require('./beneficiary.controller');
 const { authenticate } = require('../../middleware/auth.middleware');
 const { authorizeRoles } = require('../../middleware/role.middleware');
 
-const router = express.Router();
+// Public / Donor Endpoint (Only returns Verified & Active Beneficiaries for donation selection)
+router.get('/beneficiaries/verified', beneficiaryController.getVerifiedBeneficiaries);
 
-router.use(authenticate);
+// Admin-Only Endpoints
+router.use('/admin/beneficiaries', authenticate, authorizeRoles('ADMIN'));
 
-// Publicly readable for authenticated users (volunteers, admins, donors)
-router.get('/', beneficiaryController.getAll);
-router.get('/:id', beneficiaryController.getById);
-
-// Admin-only creation
-router.post('/', authorizeRoles('ADMIN'), beneficiaryController.create);
+router.get('/admin/beneficiaries', beneficiaryController.getAllBeneficiaries);
+router.post('/admin/beneficiaries', beneficiaryController.createBeneficiary);
+router.get('/admin/beneficiaries/:id', beneficiaryController.getBeneficiaryById);
+router.put('/admin/beneficiaries/:id', beneficiaryController.updateBeneficiary);
+router.patch('/admin/beneficiaries/:id/verify', beneficiaryController.verifyBeneficiary);
+router.patch('/admin/beneficiaries/:id/reject', beneficiaryController.rejectBeneficiary);
+router.patch('/admin/beneficiaries/:id/toggle-status', beneficiaryController.toggleStatus);
 
 module.exports = router;

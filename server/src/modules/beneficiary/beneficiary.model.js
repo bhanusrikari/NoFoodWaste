@@ -1,48 +1,91 @@
 const mongoose = require('mongoose');
 
-const BENEFICIARY_TYPES = [
-  'NGO',
-  'SHELTER',
-  'CHILDREN_HOME',
-  'COMMUNITY_CENTER',
-  'OTHER',
-];
-
 const beneficiarySchema = new mongoose.Schema(
   {
-    name: {
+    beneficiaryId: {
       type: String,
-      required: [true, 'Beneficiary name is required'],
+      unique: true,
       trim: true,
     },
-    type: {
+    organizationName: {
       type: String,
-      required: [true, 'Beneficiary type is required'],
+      required: [true, 'Organization name is required'],
+      trim: true,
+    },
+    category: {
+      type: String,
+      required: [true, 'Category is required'],
       enum: {
-        values: BENEFICIARY_TYPES,
-        message: `Type must be one of: ${BENEFICIARY_TYPES.join(', ')}`,
+        values: [
+          'Orphanage',
+          "Children's Home",
+          'Shelter',
+          'NGO',
+          'Community Center',
+          'Old-Age Home',
+          'Other',
+        ],
+        message: 'Invalid beneficiary category',
       },
     },
+    contactPerson: {
+      type: String,
+      required: [true, 'Contact person name is required'],
+      trim: true,
+    },
     phone: {
+      type: String,
+      required: [true, 'Phone number is required'],
+      trim: true,
+    },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: '',
+    },
+    location: {
+      type: String,
+      required: [true, 'Location/Address is required'],
+      trim: true,
+    },
+    city: {
+      type: String,
+      trim: true,
+      default: 'Hyderabad',
+    },
+    peopleServed: {
+      type: Number,
+      required: [true, 'Number of people served is required'],
+      min: [1, 'Number of people served must be at least 1'],
+    },
+    verificationStatus: {
+      type: String,
+      enum: {
+        values: ['PENDING_VERIFICATION', 'VERIFIED', 'REJECTED'],
+        message: 'Invalid verification status',
+      },
+      default: 'PENDING_VERIFICATION',
+    },
+    rejectionReason: {
       type: String,
       trim: true,
       default: '',
     },
-    address: {
+    accountStatus: {
       type: String,
-      required: [true, 'Address is required'],
+      enum: {
+        values: ['ACTIVE', 'INACTIVE'],
+        message: 'Invalid account status',
+      },
+      default: 'ACTIVE',
+    },
+    notes: {
+      type: String,
       trim: true,
+      default: '',
     },
-    location: {
-      latitude: { type: Number, default: null },
-      longitude: { type: Number, default: null },
-    },
-    verified: {
-      type: Boolean,
-      default: false,
-    },
-    // Optional link to User account if the beneficiary has a login
-    userId: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null,
@@ -52,6 +95,16 @@ const beneficiarySchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Pre-save hook to generate beneficiaryId
+beneficiarySchema.pre('save', async function (next) {
+  if (!this.beneficiaryId) {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const timestampSuffix = Date.now().toString().slice(-4);
+    this.beneficiaryId = `BEN-${timestampSuffix}${randomSuffix}`;
+  }
+  next();
+});
 
 beneficiarySchema.set('toJSON', {
   transform: function (doc, ret) {
@@ -63,7 +116,5 @@ beneficiarySchema.set('toJSON', {
 });
 
 const Beneficiary = mongoose.model('Beneficiary', beneficiarySchema);
-
-Beneficiary.TYPES = BENEFICIARY_TYPES;
 
 module.exports = Beneficiary;

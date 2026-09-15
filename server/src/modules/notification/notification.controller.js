@@ -1,47 +1,39 @@
 const notificationService = require('./notification.service');
 
 class NotificationController {
-  async getNotifications(req, res, next) {
+  async getAdminNotifications(req, res, next) {
     try {
-      const notifications = await notificationService.getByUserId(req.user.id);
-      const unreadCount = await notificationService.getUnreadCount(req.user.id);
-
-      return res.status(200).json({
+      const result = await notificationService.getAdminNotifications(req.query);
+      res.status(200).json({
         success: true,
-        notifications,
-        unreadCount,
+        unreadCount: result.unreadCount,
+        totalCount: result.totalCount,
+        data: result.notifications,
       });
-    } catch (error) {
-      next(error);
+    } catch (err) {
+      next(err);
     }
   }
 
   async markAsRead(req, res, next) {
     try {
-      const notification = await notificationService.markAsRead(
-        req.params.id,
-        req.user.id
-      );
-
-      return res.status(200).json({
+      const updated = await notificationService.markAsRead(req.params.id);
+      res.status(200).json({
         success: true,
-        notification,
+        message: 'Notification marked as read',
+        data: updated,
       });
-    } catch (error) {
-      next(error);
+    } catch (err) {
+      next(err);
     }
   }
 
   async markAllAsRead(req, res, next) {
     try {
-      await notificationService.markAllAsRead(req.user.id);
-
-      return res.status(200).json({
-        success: true,
-        message: 'All notifications marked as read',
-      });
-    } catch (error) {
-      next(error);
+      const result = await notificationService.markAllAsRead();
+      res.status(200).json(result);
+    } catch (err) {
+      next(err);
     }
   }
 }

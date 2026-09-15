@@ -2,49 +2,49 @@ const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'User ID is required'],
+    notificationId: {
+      type: String,
+      unique: true,
+      trim: true,
     },
-
     title: {
       type: String,
-      required: [true, 'Title is required'],
+      required: true,
       trim: true,
     },
-
     message: {
       type: String,
-      required: [true, 'Message is required'],
+      required: true,
       trim: true,
     },
-
     type: {
       type: String,
-      enum: {
-        values: [
-          'ASSIGNMENT_CREATED',
-          'ASSIGNMENT_ACCEPTED',
-          'PICKUP_STARTED',
-          'COLLECTION_COMPLETE',
-          'TRANSPORT_STARTED',
-          'DELIVERY_COMPLETE',
-          'TASK_COMPLETED',
-          'GENERAL',
-        ],
-        message: 'Invalid notification type',
-      },
-      default: 'GENERAL',
+      enum: [
+        'NEW_FOOD_REQUEST',
+        'NEW_DONATION',
+        'MATCHING_REQUIRED',
+        'DELIVERY_ASSISTANCE_REQUESTED',
+        'VOLUNTEER_REJECTED',
+        'DELIVERY_DELAYED',
+        'DELIVERY_COMPLETED',
+        'RECIPIENT_ACKNOWLEDGED',
+        'CANCELLATION',
+        'REPORT_SUBMITTED',
+        'SYSTEM_ALERT',
+      ],
+      default: 'SYSTEM_ALERT',
     },
-
-    relatedAssignmentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Assignment',
-      default: null,
+    relatedEntity: {
+      type: String,
+      enum: ['FoodRequest', 'Donation', 'Delivery', 'Report', 'User', 'System'],
+      default: 'System',
     },
-
-    read: {
+    relatedEntityId: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    isRead: {
       type: Boolean,
       default: false,
     },
@@ -54,9 +54,14 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
-// Index for efficient user notification queries
-notificationSchema.index({ userId: 1, createdAt: -1 });
-notificationSchema.index({ userId: 1, read: 1 });
+notificationSchema.pre('save', async function (next) {
+  if (!this.notificationId) {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const timestampSuffix = Date.now().toString().slice(-4);
+    this.notificationId = `NOTIF-${timestampSuffix}${randomSuffix}`;
+  }
+  next();
+});
 
 notificationSchema.set('toJSON', {
   transform: function (doc, ret) {

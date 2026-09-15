@@ -1,20 +1,19 @@
 const express = require('express');
+const router = express.Router();
 const volunteerController = require('./volunteer.controller');
 const { authenticate } = require('../../middleware/auth.middleware');
 const { authorizeRoles } = require('../../middleware/role.middleware');
 
-const router = express.Router();
+// Admin-Only Endpoints
+router.use('/admin/volunteers', authenticate, authorizeRoles('ADMIN'));
 
-// All volunteer routes require authentication + VOLUNTEER role
-router.use(authenticate, authorizeRoles('VOLUNTEER'));
-
-// GET /api/volunteers/me
-router.get('/me', volunteerController.getProfile);
-
-// PATCH /api/volunteers/me/availability
-router.patch('/me/availability', volunteerController.updateAvailability);
-
-// PATCH /api/volunteers/me/location
-router.patch('/me/location', volunteerController.updateLocation);
+router.get('/admin/volunteers', volunteerController.getAllVolunteers);
+router.post('/admin/volunteers/assign-delivery', volunteerController.assignDelivery);
+router.get('/admin/volunteers/:id', volunteerController.getVolunteerById);
+router.put('/admin/volunteers/:id', volunteerController.updateVolunteerProfile);
+router.patch('/admin/volunteers/:id/verify', volunteerController.verifyVolunteer);
+router.patch('/admin/volunteers/:id/reject', volunteerController.rejectVolunteer);
+router.patch('/admin/volunteers/:id/toggle-status', volunteerController.toggleStatus);
+router.patch('/admin/volunteers/:id/availability', volunteerController.updateAvailability);
 
 module.exports = router;
